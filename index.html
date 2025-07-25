@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StolenArts - Streaming</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Enhanced Dark blue theme colors */
+            --dark-bg: #0a0e1a;
+            --darker-bg: #050812;
+            --card-bg: #1a1f35;
+            --card-hover: #2a3050;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-glow: #60a5fa;
+            --accent-dark: #1d4ed8;
+            --light-text: #f8fafc;
+            --muted-text: #64748b;
+            --border-color: #334155;
+            --glass-bg: rgba(26, 31, 53, 0.9);
+            --glass-border: rgba(51, 65, 85, 0.4);
+            --gradient-primary: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            --gradient-secondary: linear-gradient(135deg, #1e293b, #0f172a);
+            --gradient-card: linear-gradient(145deg, #1a1f35, #141829);
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 12px 40px rgba(59, 130, 246, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg));
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(29, 78, 216, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            backdrop-filter: blur(25px);
+            background: rgba(10, 14, 26, 0.95);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            min-height: 70px;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.6em;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-primary);
+            border-radius: 1px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 12px 20px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .search-box:hover::before {
+            left: 100%;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), var(--shadow-glow);
+            transform: scale(1.02);
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: white;
+            outline: none;
+            margin-left: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            width: 160px;
+            min-width: 0;
+        }
+
+        .search-box i {
+            color: var(--accent);
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .menu-toggle {
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 21;
+            padding: 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            color: var(--accent);
+        }
+
+        .menu-toggle:hover {
+            background: var(--card-hover);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Enhanced Drawer */
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100vh;
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(10, 14, 26, 0.98));
+            backdrop-filter: blur(25px);
+            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 30;
+            padding: 30px;
+            border-right: 1px solid var(--border-color);
+            box-shadow: 8px 0 32px rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 25;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .drawer .profile {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: var(--gradient-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drawer .profile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drawer .profile:hover::before {
+            opacity: 1;
+        }
+
+        .drawer .profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-glow);
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .drawer .profile:hover img {
+            transform: scale(1.1);
+        }
+
+        .drawer .profile h3 {
+            font-size: 1.2em;
+            margin-bottom: 6px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .drawer .profile small {
+            font-size: 0.9em;
+            color: var(--muted-text);
+            font-weight: 500;
+        }
+
+        .drawer nav a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--light-text);
+            text-decoration: none;
+            padding: 16px 20px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drawer nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .drawer nav a:hover::before {
+            left: 0;
+        }
+
+        .drawer nav a:hover {
+            color: white;
+            transform: translateX(8px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .drawer nav a.active {
+            background: var(--gradient-primary);
+            border-color: var(--accent-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .drawer nav a.active::before {
+            left: 0;
+        }
+
+        .drawer nav a i {
+            width: 24px;
+            text-align: center;
+            color: var(--accent-glow);
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        /* Enhanced Hero section */
+        .destaque {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            padding: 40px 20px;
+            min-height: 500px;
+            display: flex;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .destaque::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg, 
+                rgba(10, 14, 26, 0.9) 0%, 
+                rgba(10, 14, 26, 0.3) 40%, 
+                rgba(10, 14, 26, 0.7) 100%
+            );
+            z-index: 0;
+        }
+
+        .destaque::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--dark-bg) 0%, transparent 70%);
+            z-index: 1;
+        }
+
+        .destaque-content {
+            position: relative;
+            display: flex;
+            z-index: 2;
+            gap: 30px;
+            align-items: flex-end;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .destaque-thumb {
+            width: 140px;
+            height: 200px;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.8);
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .destaque-thumb::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .destaque-thumb:hover {
+            transform: scale(1.08) rotateY(5deg);
+            box-shadow: var(--shadow-glow), 0 20px 60px rgba(0, 0, 0, 0.9);
+        }
+
+        .destaque-thumb:hover::before {
+            opacity: 1;
+        }
+
+        .destaque-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .destaque-info .greeting {
+            font-size: 1em;
+            margin-bottom: 6px;
+            color: #e2e8f0;
+            font-weight: 500;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .destaque-info .subtitle {
+            font-size: 1.1em;
+            color: var(--accent-glow);
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.6);
+        }
+
+        .destaque-info h2 {
+            font-size: 2.2em;
+            margin-bottom: 16px;
+            font-weight: 800;
+            text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.9);
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .destaque-info p {
+            font-size: 1em;
+            color: #cbd5e1;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .destaque-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .destaque-buttons button {
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .destaque-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .destaque-buttons button:hover::before {
+            left: 100%;
+        }
+
+        .destaque-buttons button:first-child {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .destaque-buttons button:first-child:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.6);
+        }
+
+        .destaque-buttons button:last-child {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--glass-border);
+            color: #fff;
+        }
+
+        .destaque-buttons button:last-child:hover {
+            background: rgba(42, 48, 80, 0.9);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Enhanced sections */
+        .section-title {
+            font-size: 1.5em;
+            margin: 35px 20px 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 6px;
+            height: 30px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent), transparent);
+            margin-left: auto;
+        }
+
+        .scroll-row {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 20px 30px;
+            gap: 16px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scroll-row::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .scroll-row::-webkit-scrollbar-track {
+            background: var(--card-bg);
+            border-radius: 3px;
+        }
+
+        .scroll-row::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        .scroll-row::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Enhanced cards */
+        .item-card {
+            flex: 0 0 auto;
+            width: 130px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-card);
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(29, 78, 216, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .item-card:hover::before {
+            opacity: 1;
+        }
+
+        .item-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: var(--shadow-hover), var(--shadow-card);
+            border-color: var(--accent);
+        }
+
+        .item-card img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+            position: relative;
+            z-index: 0;
+        }
+
+        .item-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .item-card .card-title {
+            padding: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+            color: var(--light-text);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            background: rgba(26, 31, 53, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .item-card .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(10,14,26,0.9) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .item-card .play-button {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .item-card:hover .play-button {
+            transform: scale(1);
+        }
+
+        /* Loading skeleton enhanced */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-hover) 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: loading 2s infinite;
+            border-radius: 16px;
+            height: 170px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .loading-text {
+            text-align: center;
+            color: var(--muted-text);
+            padding: 30px;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        /* Enhanced mobile adjustments */
+        @media (max-width: 768px) {
+            .search-box {
+                width: auto;
+                max-width: 140px;
+                padding: 10px 16px;
+            }
+            
+            .search-box input {
+                width: 90px;
+                font-size: 13px;
+            }
+            
+            .logo {
+                font-size: 1.3em;
+            }
+            
+            .menu-toggle {
+                font-size: 18px;
+                min-width: 44px;
+                min-height: 44px;
+                padding: 10px;
+            }
+            
+            .destaque {
+                min-height: 350px;
+                padding: 20px 16px;
+            }
+            
+            .destaque-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .destaque-thumb {
+                width: 110px;
+                height: 160px;
+            }
+            
+            .destaque-info h2 {
+                font-size: 1.6em;
+            }
+            
+            .destaque-info p {
+                font-size: 0.9em;
+                -webkit-line-clamp: 2;
+            }
+            
+            .destaque-buttons button {
+                padding: 12px 20px;
+                font-size: 0.9em;
+            }
+            
+            .section-title {
+                font-size: 1.2em;
+                margin: 25px 16px 16px;
+            }
+            
+            .scroll-row {
+                padding: 0 16px 20px;
+                gap: 12px;
+            }
+            
+            .item-card {
+                width: 110px;
+            }
+            
+            .item-card img {
+                height: 150px;
+            }
+
+            .drawer {
+                width: 300px;
+                left: -300px;
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 12px 16px;
+            }
+            
+            .search-box {
+                display: none;
+            }
+            
+            .destaque {
+                min-height: 280px;
+                padding: 16px 12px;
+            }
+            
+            .destaque-thumb {
+                width: 90px;
+                height: 130px;
+            }
+            
+            .destaque-info h2 {
+                font-size: 1.3em;
+            }
+            
+            .item-card {
+                width: 100px;
+            }
+            
+            .item-card img {
+                height: 135px;
+            }
+
+            .drawer {
+                width: 280px;
+                left: -280px;
+                padding: 20px;
+            }
+        }
+
+        /* Enhanced animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .fade-in-left {
+            animation: fadeInLeft 0.8s ease forwards;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Scrollbar global enhancement */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay do drawer -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+    
+    <!-- MENU LATERAL -->
+    <div class="drawer" id="drawer">
+        <div class="profile">
+            <img alt="Avatar do Criador" src="https://i.pinimg.com/736x/bf/61/35/bf6135da514102f7afe1005242ce76bd.jpg">
+            <h3>StolenArts</h3>
+            <small>@animefluxo</small>
+        </div>
+        <nav>
+            <a href="#" id="filter-dublado"><i class="fas fa-globe"></i> Dublado</a>
+            <a href="#" id="filter-legendado"><i class="fas fa-closed-captioning"></i> Legendado</a>
+            <a href="#" id="filter-all" class="active"><i class="fas fa-list"></i> Todos</a>
+            <a href="#" id="filter-lancamentos"><i class="fas fa-fire"></i> Lançamentos</a>
+            <a href="#" id="filter-bem-avaliados"><i class="fas fa-star"></i> Bem Avaliados</a>
+        </nav>
+    </div>
+    
+    <!-- HEADER -->
+    <header>
+        <div class="logo">StolenArts</div>
+        <div class="header-controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input placeholder="Buscar anime..." type="text" id="search-input">
+            </div>
+            <div class="menu-toggle" onclick="toggleDrawer()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+    
+    <!-- DESTAQUE -->
+    <section class="destaque" id="destaque">
+        <div class="destaque-content fade-in" id="destaque-content">
+            <img class="destaque-thumb" id="destaque-thumb" src="" alt="">
+            <div class="destaque-info">
+                <div class="greeting">Olá <b>Usuário</b></div>
+                <p class="subtitle">Bem-vindo ao StolenArts</p>
+                <h2 id="destaque-title">Carregando...</h2>
+                <p id="destaque-description">Carregando descrição...</p>
+                <div class="destaque-buttons">
+                    <button><i class="fas fa-play"></i> Assistir</button>
+                    <button><i class="fas fa-plus"></i> Minha Lista</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- LANÇAMENTOS -->
+    <h3 class="section-title">
+        <i class="fas fa-fire"></i>
+        Lançamentos
+    </h3>
+    <div class="scroll-row" id="lancamentos-container">
+        <div class="loading-text">Carregando lançamentos...</div>
+    </div>
+    
+    <!-- BEM AVALIADOS -->
+    <h3 class="section-title">
+        <i class="fas fa-star"></i>
+        Bem Avaliados
+    </h3>
+    <div class="scroll-row" id="bem-avaliados-container">
+        <div class="loading-text">Carregando bem avaliados...</div>
+    </div>
+    
+    <!-- GÊNERO AÇÃO -->
+    <h3 class="section-title">
+        <i class="fas fa-bolt"></i>
+        Gênero: Ação
+    </h3>
+    <div class="scroll-row" id="genero-acao-container">
+        <div class="loading-text">Carregando animes de ação...</div>
+    </div>
+
+    <!-- GÊNERO ECCHI -->
+    <h3 class="section-title">
+        <i class="fas fa-heart-broken"></i>
+        Gênero: Ecchi
+    </h3>
+    <div class="scroll-row" id="genero-ecchi-container">
+        <div class="loading-text">Carregando animes ecchi...</div>
+    </div>
+
+    <!-- GÊNERO ROMANCE -->
+    <h3 class="section-title">
+        <i class="fas fa-heart"></i>
+        Gênero: Romance
+    </h3>
+    <div class="scroll-row" id="genero-romance-container">
+        <div class="loading-text">Carregando animes de romance...</div>
+    </div>
+    
+    <!-- TODOS OS ANIMES -->
+    <h3 class="section-title">
+        <i class="fas fa-film"></i>
+        Todos os Animes
+    </h3>
+    <div class="scroll-row" id="todos-animes-container">
+        <div class="loading-text">Carregando todos os animes...</div>
+    </div>
+
+    <script>
+        // URL JSON DO FIREBASE COM OS ANIMES
+        const API_URLS = {
+            todos: 'https://nime-3be34-default-rtdb.firebaseio.com/Todos%20animes.json', //sisksjsj
+            lancamentos: 'https://nime-3be34-default-rtdb.firebaseio.com/Lançamento.json',
+            bemAvaliados: 'https://nime-3be34-default-rtdb.firebaseio.com/Bem%20avaliado.json'
+        };
+
+        // Variáveis globais para armazenar os dados
+        let todosAnimes = [];
+        let lancamentos = [];
+        let bemAvaliados = [];
+        let currentFilter = 'all';
+
+        // Função para buscar dados das APIs
+        async function fetchAnimeData() {
+            try {
+                console.log('Buscando dados das APIs...');
+                
+                const [todosResponse, lancamentosResponse, bemAvaliadosResponse] = await Promise.all([
+                    fetch(API_URLS.todos),
+                    fetch(API_URLS.lancamentos),
+                    fetch(API_URLS.bemAvaliados)
+                ]);
+
+                todosAnimes = await todosResponse.json() || [];
+                lancamentos = await lancamentosResponse.json() || [];
+                bemAvaliados = await bemAvaliadosResponse.json() || [];
+
+                console.log('Dados carregados:', {
+                    todos: Object.keys(todosAnimes).length,
+                    lancamentos: Object.keys(lancamentos).length,
+                    bemAvaliados: Object.keys(bemAvaliados).length
+                });
+
+                // Renderizar os dados
+                renderDestaque();
+                renderAnimes();
+                renderGeneroAcao();
+                renderGeneroEcchi();
+                renderGeneroRomance();
+                
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                showError();
+            }
+        }
+
+        // Função para renderizar o destaque
+        function renderDestaque() {
+            const keys = Object.keys(todosAnimes);
+            if (keys.length > 0) {
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                const anime = todosAnimes[randomKey];
+                
+                document.getElementById('destaque-title').textContent = anime.nome || anime.title || anime.titulo || anime.title_english || 'Título não disponível' || 'Anime em Destaque';
+                document.getElementById('destaque-description').textContent = anime.sinopse || 'Descrição não disponível';
+                document.getElementById('destaque-thumb').src = anime.capa || '';
+                document.getElementById('destaque').style.backgroundImage = `url('${anime.capa || ''}')`;
+            }
+        }
+
+        // Função para criar um card de anime
+    function createAnimeCard(anime) {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+
+    // Tenta pegar o nome do anime pela ordem de prioridade
+    const nomeAnime = anime.nome || anime.titulo || anime.title || anime.title_english || 'Sem título';
+
+    card.innerHTML = `
+        <img src="${anime.capa || 'https://via.placeholder.com/150x200?text=Anime'}" alt="${nomeAnime}" onerror="this.src='https://via.placeholder.com/150x200?text=Erro'">
+        <div class="card-overlay">
+            <button class="play-button">
+                <i class="fas fa-play"></i>
+            </button>
+        </div>
+        <div class="card-title">${nomeAnime}</div>
+    `;
+
+    // Clique para salvar no localStorage e redirecionar
+    card.addEventListener('click', () => {
+        localStorage.setItem('animeSelecionado', JSON.stringify(anime));
+        window.location.href = 'detalhes.html';
+    });
+
+    return card;
+}
+
+        // Função para renderizar animes em um container
+        function renderAnimesInContainer(animes, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (!animes || Object.keys(animes).length === 0) {
+                container.innerHTML = '<div class="loading-text">Nenhum anime encontrado</div>';
+                return;
+            }
+
+            Object.keys(animes).forEach((key, index) => {
+                const anime = animes[key];
+                const card = createAnimeCard(anime);
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+                container.appendChild(card);
+            });
+        }
+
+        // Função para filtrar animes por dublado/legendado
+        function filterAnimes(animes, filterType) {
+            if (filterType === 'all') return animes;
+            
+            const filtered = {};
+            Object.keys(animes).forEach(key => {
+                const anime = animes[key];
+                const nome = (anime.nome || anime.title || anime.titulo || anime.title_english || 'Título não disponível' || '').toLowerCase();
+                const sinopse = (anime.sinopse || '').toLowerCase();
+                
+                if (filterType === 'dublado') {
+                    if (nome.includes('dublado') || sinopse.includes('dublado')) {
+                        filtered[key] = anime;
+                    }
+                } else if (filterType === 'legendado') {
+                    if (nome.includes('legendado') || sinopse.includes('legendado') || 
+                        (!nome.includes('dublado') && !sinopse.includes('dublado'))) {
+                        filtered[key] = anime;
+                    }
+                }
+            });
+            
+            return filtered;
+        }
+
+        // Função para renderizar animes de gênero Ação diretamente da API
+        async function renderGeneroAcao() {
+            try {
+                const response = await fetch("https://nime-3be34-default-rtdb.firebaseio.com/Todos%20animes.json");
+                const data = await response.json();
+                const acaoAnimes = {};
+                Object.keys(data).forEach(key => {
+                    const anime = data[key];
+                    const generos = Array.isArray(anime.generos) ? anime.generos.join(' ').toLowerCase() : '';
+                    if (generos.includes('aventura') || generos.includes('acao')) {
+                        acaoAnimes[key] = anime;
+                    }
+                });
+                renderAnimesInContainer(acaoAnimes, 'genero-acao-container');
+            } catch (error) {
+                console.error("Erro ao carregar animes de Ação:", error);
+                const container = document.getElementById('genero-acao-container');
+                container.innerHTML = '<div class="loading-text">Erro ao carregar animes de Ação</div>';
+            }
+        }
+        
+        // Função para renderizar animes de gênero Ecchi diretamente da API
+        async function renderGeneroEcchi() {
+            try {
+                const response = await fetch("https://nime-3be34-default-rtdb.firebaseio.com/Todos%20animes.json");
+                const data = await response.json();
+                const ecchiAnimes = {};
+                Object.keys(data).forEach(key => {
+                    const anime = data[key];
+                    const generos = Array.isArray(anime.generos) ? anime.generos.join(' ').toLowerCase() : '';
+                    if (generos.includes('ecchi')) {
+                        ecchiAnimes[key] = anime;
+                    }
+                });
+                renderAnimesInContainer(ecchiAnimes, 'genero-ecchi-container');
+            } catch (error) {
+                console.error("Erro ao carregar animes de Ecchi:", error);
+                const container = document.getElementById('genero-ecchi-container');
+                container.innerHTML = '<div class="loading-text">Erro ao carregar animes de Ecchi</div>';
+            }
+        }
+
+        // Função para renderizar animes de gênero Romance diretamente da API
+        async function renderGeneroRomance() {
+            try {
+                const response = await fetch("https://nime-3be34-default-rtdb.firebaseio.com/Todos%20animes.json");
+                const data = await response.json();
+                const romanceAnimes = {};
+                Object.keys(data).forEach(key => {
+                    const anime = data[key];
+                    const generos = Array.isArray(anime.generos) ? anime.generos.join(' ').toLowerCase() : '';
+                    if (generos.includes('romance')) {
+                        romanceAnimes[key] = anime;
+                    }
+                });
+                renderAnimesInContainer(romanceAnimes, 'genero-romance-container');
+            } catch (error) {
+                console.error("Erro ao carregar animes de Romance:", error);
+                const container = document.getElementById('genero-romance-container');
+                container.innerHTML = '<div class="loading-text">Erro ao carregar animes de Romance</div>';
+            }
+        }
+
+        // Função para renderizar todos os animes com base no filtro atual
+        function renderAnimes() {
+            let filteredTodos, filteredLancamentos, filteredBemAvaliados;
+
+            switch(currentFilter) {
+                case 'dublado':
+                    filteredTodos = filterAnimes(todosAnimes, 'dublado');
+                    filteredLancamentos = filterAnimes(lancamentos, 'dublado');
+                    filteredBemAvaliados = filterAnimes(bemAvaliados, 'dublado');
+                    break;
+                case 'legendado':
+                    filteredTodos = filterAnimes(todosAnimes, 'legendado');
+                    filteredLancamentos = filterAnimes(lancamentos, 'legendado');
+                    filteredBemAvaliados = filterAnimes(bemAvaliados, 'legendado');
+                    break;
+                case 'lancamentos':
+                    filteredTodos = {};
+                    filteredLancamentos = lancamentos;
+                    filteredBemAvaliados = {};
+                    break;
+                case 'bem-avaliados':
+                    filteredTodos = {};
+                    filteredLancamentos = {};
+                    filteredBemAvaliados = bemAvaliados;
+                    break;
+                default:
+                    filteredTodos = todosAnimes;
+                    filteredLancamentos = lancamentos;
+                    filteredBemAvaliados = bemAvaliados;
+            }
+
+            renderAnimesInContainer(filteredLancamentos, 'lancamentos-container');
+            renderAnimesInContainer(filteredBemAvaliados, 'bem-avaliados-container');
+            renderAnimesInContainer(filteredTodos, 'todos-animes-container');
+        }
+
+        // Função para mostrar erro
+        function showError() {
+            const containers = ['lancamentos-container', 'bem-avaliados-container', 'todos-animes-container'];
+            containers.forEach(id => {
+                document.getElementById(id).innerHTML = '<div class="loading-text">Erro ao carregar dados</div>';
+            });
+        }
+
+        // Função para toggle do drawer
+        function toggleDrawer() {
+            const drawer = document.getElementById("drawer");
+            const overlay = document.getElementById("drawer-overlay");
+
+            drawer.classList.toggle("open");
+            overlay.classList.toggle("active");
+
+            if (drawer.classList.contains("open")) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Event listeners para os filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtros do menu lateral
+            document.getElementById('filter-dublado').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveFilter(this, 'dublado');
+            });
+
+            document.getElementById('filter-legendado').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveFilter(this, 'legendado');
+            });
+
+            document.getElementById('filter-all').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveFilter(this, 'all');
+            });
+
+            document.getElementById('filter-lancamentos').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveFilter(this, 'lancamentos');
+            });
+
+            document.getElementById('filter-bem-avaliados').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveFilter(this, 'bem-avaliados');
+            });
+
+            // Busca
+            document.getElementById('search-input').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                searchAnimes(searchTerm);
+            });
+
+            // Buscar dados iniciais
+            fetchAnimeData();
+            
+            // Atualizar dados a cada 30 segundos
+            setInterval(fetchAnimeData, 30000);
+        });
+
+        function setActiveFilter(element, filter) {
+            // Remover classe active de todos os filtros
+            document.querySelectorAll('.drawer nav a').forEach(a => a.classList.remove('active'));
+            // Adicionar classe active ao filtro selecionado
+            element.classList.add('active');
+            
+            currentFilter = filter;
+            renderAnimes();
+            renderGeneroAcao();
+            renderGeneroEcchi();
+            renderGeneroRomance();
+            toggleDrawer(); // Fechar o drawer após selecionar
+        }
+
+        function searchAnimes(searchTerm) {
+            if (!searchTerm) {
+                renderAnimes();
+                renderGeneroAcao();
+                renderGeneroEcchi();
+                renderGeneroRomance();
+                return;
+            }
+
+            const searchInAnimes = (animes) => {
+                const filtered = {};
+                Object.keys(animes).forEach(key => {
+                    const anime = animes[key];
+                    const nome = (anime.nome || anime.title || anime.titulo || anime.title_english || 'Título não disponível' || '').toLowerCase();
+                    const sinopse = (anime.sinopse || '').toLowerCase();
+                    const genero = (anime.genero || '').toLowerCase();
+                    
+                    if (nome.includes(searchTerm) || sinopse.includes(searchTerm) || genero.includes(searchTerm)) {
+                        filtered[key] = anime;
+                    }
+                });
+                return filtered;
+            };
+
+            const filteredTodos = searchInAnimes(todosAnimes);
+            const filteredLancamentos = searchInAnimes(lancamentos);
+            const filteredBemAvaliados = searchInAnimes(bemAvaliados);
+
+            renderAnimesInContainer(filteredLancamentos, 'lancamentos-container');
+            renderAnimesInContainer(filteredBemAvaliados, 'bem-avaliados-container');
+            renderAnimesInContainer(filteredTodos, 'todos-animes-container');
+        }
+
+        // Event listeners para ESC e overlay
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const drawer = document.getElementById("drawer");
+                if (drawer.classList.contains("open")) {
+                    toggleDrawer();
+                }
+            }
+        });
+
+        document.getElementById("drawer-overlay").addEventListener("click", toggleDrawer);
+    </script>
+</body>
+</html>
